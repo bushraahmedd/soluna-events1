@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { supabase } from './supabase';
 
 export type Category = {
     id: string;
@@ -10,9 +10,9 @@ export type Item = {
     id: string;
     name: string;
     price: number;
-    salePrice?: number;
+    salePrice?: number | null;
     categoryId: string;
-    image?: string; // Kept for backward compatibility key, but UI should prefer images
+    image?: string;
     images?: string[];
     description?: string;
 };
@@ -20,49 +20,94 @@ export type Item = {
 interface StoreState {
     categories: Category[];
     items: Item[];
-    addCategory: (category: Category) => void;
-    updateCategory: (id: string, name: string) => void;
-    deleteCategory: (id: string) => void;
-    addItem: (item: Item) => void;
-    updateItem: (item: Item) => void;
-    deleteItem: (id: string) => void;
+    isLoading: boolean;
+    initialize: () => Promise<void>;
+    addCategory: (category: Category) => Promise<void>;
+    updateCategory: (id: string, name: string) => Promise<void>;
+    deleteCategory: (id: string) => Promise<void>;
+    addItem: (item: Item) => Promise<void>;
+    updateItem: (item: Item) => Promise<void>;
+    deleteItem: (id: string) => Promise<void>;
     getCategories: () => Category[];
     getItemsByCategory: (categoryId: string) => Item[];
 }
 
-export const useStore = create<StoreState>()(
-    persist(
-        (set, get) => ({
-            categories: [
-                { id: '1', name: 'تجهيزات الأفراح' },
-                { id: '2', name: 'زينة وإضاءة' },
-                { id: '3', name: 'طاولات وكراسي' },
-            ],
-            items: [
-                { id: '1', name: 'ثريا كريستال ملكية', price: 1200, salePrice: 999, categoryId: '2', image: '/chandelier.jpg', images: ['/chandelier.jpg'] },
-                { id: '2', name: 'مصباح مخملي فاخر', price: 150, categoryId: '2', images: [] },
-                { id: '3', name: 'طاولة استقبال ذهبية', price: 300, categoryId: '3', images: [] },
-                { id: '4', name: 'كرسي تيفاني (ذهبي)', price: 25, categoryId: '3', images: [] },
-                { id: '5', name: 'كوشة عروس ملكية', price: 5000, categoryId: '1', images: [] },
-            ],
-            addCategory: (category) => set((state) => ({ categories: [...state.categories, category] })),
-            updateCategory: (id, name) => set((state) => ({
-                categories: state.categories.map((c) => (c.id === id ? { ...c, name } : c)),
-            })),
-            deleteCategory: (id) => set((state) => ({
-                categories: state.categories.filter((c) => c.id !== id),
-                items: state.items.filter((i) => i.categoryId !== id),
-            })),
-            addItem: (item) => set((state) => ({ items: [...state.items, item] })),
-            updateItem: (updatedItem) => set((state) => ({
-                items: state.items.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
-            })),
-            deleteItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-            getCategories: () => get().categories,
-            getItemsByCategory: (categoryId) => get().items.filter((i) => i.categoryId === categoryId),
-        }),
-        {
-            name: 'soluna-storage',
+export const useStore = create<StoreState>()((set, get) => ({
+    categories: [],
+    items: [],
+    isLoading: false,
+
+    initialize: async () => {
+        set({ isLoading: true });
+        try {
+            // Fetch initial data
+            const [categoriesRes, itemsRes] = await Promise.all([
+                supabase.from('categories').select('*'),
+                supabase.from('items').select('*')
+            ]);
+
+            if (categoriesRes.error) throw categoriesRes.error;
+            if (itemsRes.error) throw itemsRes.error;
+
+            set({
+                categories: categoriesRes.data || [],
+                items: itemsRes.data || [],
+                isLoading: false
+            });
+
+            // Set up real-time subscriptions
+            supabase
+                .channel('db-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, async () => {
+                    const { data } = await supabase.from('categories').select('*');
+                    if (data) set({ categories: data });
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, async () => {
+                    const { data } = await supabase.from('items').select('*');
+                    if (data) set({ items: data });
+                })
+                .subscribe();
+
+        } catch (error) {
+            console.error('Error initializing Supabase store:', error);
+            set({ isLoading: false });
         }
-    )
-);
+    },
+
+    addCategory: async (category) => {
+        const { error } = await supabase.from('categories').insert([category]);
+        if (error) console.error('Error adding category:', error);
+    },
+
+    updateCategory: async (id, name) => {
+        const { error } = await supabase.from('categories').update({ name }).eq('id', id);
+        if (error) console.error('Error updating category:', error);
+    },
+
+    deleteCategory: async (id) => {
+        // Items will be deleted via cascade if set up in DB, or manually here
+        const { error: itemError } = await supabase.from('items').delete().eq('categoryId', id);
+        const { error: catError } = await supabase.from('categories').delete().eq('id', id);
+        if (itemError) console.error('Error deleting items for category:', itemError);
+        if (catError) console.error('Error deleting category:', catError);
+    },
+
+    addItem: async (item) => {
+        const { error } = await supabase.from('items').insert([item]);
+        if (error) console.error('Error adding item:', error);
+    },
+
+    updateItem: async (updatedItem) => {
+        const { error } = await supabase.from('items').update(updatedItem).eq('id', updatedItem.id);
+        if (error) console.error('Error updating item:', error);
+    },
+
+    deleteItem: async (id) => {
+        const { error } = await supabase.from('items').delete().eq('id', id);
+        if (error) console.error('Error deleting item:', error);
+    },
+
+    getCategories: () => get().categories,
+    getItemsByCategory: (categoryId) => get().items.filter((i) => i.categoryId === categoryId),
+}));
+

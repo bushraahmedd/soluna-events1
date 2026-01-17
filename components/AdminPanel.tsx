@@ -5,7 +5,8 @@ import { useStore, Category, Item } from "@/lib/store";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Plus, Pencil, Trash, X, Save, Upload, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash, X, Save, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { uploadImage } from "@/lib/storage";
 
 export function AdminPanel() {
     const {
@@ -29,6 +30,7 @@ export function AdminPanel() {
     const [itemForm, setItemForm] = useState<Partial<Item>>({
         name: "", price: 0, salePrice: undefined, categoryId: "", images: [], description: ""
     });
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleCreateCategory = (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,28 +46,23 @@ export function AdminPanel() {
         setEditingCategory(null);
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files && files.length > 0) {
-            const newImages: string[] = [];
-            let processed = 0;
+            setIsUploading(true);
+            try {
+                const uploadPromises = Array.from(files).map(file => uploadImage(file));
+                const uploadedUrls = await Promise.all(uploadPromises);
 
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    if (reader.result) {
-                        newImages.push(reader.result as string);
-                        processed++;
-                        if (processed === files.length) {
-                            setItemForm(prev => ({
-                                ...prev,
-                                images: [...(prev.images || []), ...newImages]
-                            }));
-                        }
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+                const validUrls = uploadedUrls.filter((url): url is string => url !== null);
+
+                setItemForm(prev => ({
+                    ...prev,
+                    images: [...(prev.images || []), ...validUrls]
+                }));
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -165,13 +162,18 @@ export function AdminPanel() {
                                                     </div>
                                                 ))}
                                                 <div className="relative aspect-square bg-[#F9F8F4] border-2 border-dashed border-[#EBE9E1] rounded-lg flex items-center justify-center overflow-hidden group hover:border-[#B89E5F] transition-colors cursor-pointer">
-                                                    <ImageIcon className="w-6 h-6 text-[#EBE9E1] group-hover:text-[#B89E5F]" />
+                                                    {isUploading ? (
+                                                        <Loader2 className="w-6 h-6 text-[#B89E5F] animate-spin" />
+                                                    ) : (
+                                                        <ImageIcon className="w-6 h-6 text-[#EBE9E1] group-hover:text-[#B89E5F]" />
+                                                    )}
                                                     <input
                                                         type="file"
                                                         accept="image/*"
                                                         multiple
                                                         onChange={handleFileUpload}
                                                         className="absolute inset-0 opacity-0 cursor-pointer"
+                                                        disabled={isUploading}
                                                     />
                                                 </div>
                                             </div>

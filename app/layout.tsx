@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Where Dreams Unfold & Moments Are Wrapped",
 };
 
+import { StoreInitializer } from "@/components/StoreInitializer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${tajawal.variable} ${cinzel.variable} font-sans antialiased bg-stone-950 text-stone-100 selection:bg-amber-500/30`}
       >
+        <StoreInitializer />
         {children}
       </body>
     </html>
