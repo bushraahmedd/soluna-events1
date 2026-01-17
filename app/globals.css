@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  /* Soluna Light Luxury Palette */
+  --background: #FDFCF8; /* Warm Cream */
+  --foreground: #2C2420; /* Dark Espresso */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: #B89E5F; /* Gold */
+  --color-accent: #D4AF37;
+  --color-muted: #EBE9E1;
+  --font-tajawal: var(--font-tajawal);
+  --font-cinzel: var(--font-cinzel);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+     /* Supporting dark mode but default is light now per request */
+    --background: #1a1512;
+    --foreground: #FDFCF8;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-tajawal), sans-serif;
+}
