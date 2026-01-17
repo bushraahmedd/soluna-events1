@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function Catalog() {
-    const { categories, getItemsByCategory } = useStore();
+    const { categories, items: storeItems, getItemsByCategory } = useStore();
     const [hasHydrated, setHasHydrated] = useState(false);
     const [activeCategoryId, setActiveCategoryId] = useState("");
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
