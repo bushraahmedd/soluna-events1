@@ -60,22 +60,24 @@ export function Hero() {
                 className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4"
             >
                 {/* 3D Floating Logo Container */}
-                <motion.div
-                    style={{ rotateX, rotateY, z: 100 }}
-                    className="relative w-72 h-72 md:w-96 md:h-96 mb-8 cursor-pointer perspective-1000"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                >
-                    <div className="relative w-full h-full drop-shadow-2xl">
-                        <Image
-                            src="/logo.png"
-                            alt="Soluna Logo"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
-                </motion.div>
+                <a href="#catalog">
+                    <motion.div
+                        style={{ rotateX, rotateY, z: 100 }}
+                        className="relative w-72 h-72 md:w-96 md:h-96 mb-8 cursor-pointer perspective-1000"
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                    >
+                        <div className="relative w-full h-full drop-shadow-2xl">
+                            <Image
+                                src="/logo.png"
+                                alt="Soluna Logo"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
+                    </motion.div>
+                </a>
 
                 {/* Typography with staggered reveal */}
                 <motion.div
@@ -87,9 +89,21 @@ export function Hero() {
                     <h1 className="text-6xl md:text-8xl font-cinzel text-[#2C2420] drop-shadow-sm mb-4">
                         SOLUNA
                     </h1>
-                    <p className="text-xl md:text-3xl font-tajawal text-[#B89E5F] font-bold tracking-wide max-w-2xl mx-auto leading-relaxed mb-8">
+                    <p className="text-xl md:text-3xl font-tajawal text-[#B89E5F] font-bold tracking-wide max-w-2xl mx-auto leading-relaxed mb-12">
                         لأن الأحلام تستحق أن تروى ، ولحظات العمر تستحق أن تُغلف
                     </p>
+
+                    <div className="flex flex-col items-center gap-6">
+                        <Button
+                            asChild
+                            className="bg-[#2C2420] hover:bg-[#B89E5F] text-white font-tajawal font-bold px-10 py-7 text-xl rounded-full shadow-xl hover:shadow-[#B89E5F]/20 transition-all duration-300 group"
+                        >
+                            <a href="#catalog">
+                                اكتشف كتالوجنا
+                                <ChevronDown className="mr-2 w-6 h-6 animate-bounce" />
+                            </a>
+                        </Button>
+                    </div>
                 </motion.div>
             </motion.div>
         </div>

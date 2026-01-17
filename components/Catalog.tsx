@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore, Item } from "@/lib/store";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -10,15 +10,41 @@ import { cn } from "@/lib/utils";
 
 export function Catalog() {
     const { categories, getItemsByCategory } = useStore();
-    const [activeCategoryId, setActiveCategoryId] = useState(categories[0]?.id || "");
+    const [hasHydrated, setHasHydrated] = useState(false);
+    const [activeCategoryId, setActiveCategoryId] = useState("");
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-    // If active category is deleted, default to first or empty
-    if (!categories.find(c => c.id === activeCategoryId) && categories.length > 0) {
-        setActiveCategoryId(categories[0].id);
-    }
+    // Handle hydration and cross-tab sync
+    useEffect(() => {
+        setHasHydrated(true);
+        if (categories.length > 0 && !activeCategoryId) {
+            setActiveCategoryId(categories[0].id);
+        }
+
+        // Listen for changes from other tabs (Admin)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'soluna-storage') {
+                useStore.persist.rehydrate();
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [categories, activeCategoryId]);
+
+    // If active category is deleted or list changes, ensure we have a valid selection
+    useEffect(() => {
+        if (hasHydrated && categories.length > 0) {
+            if (!activeCategoryId || !categories.find(c => c.id === activeCategoryId)) {
+                setActiveCategoryId(categories[0].id);
+            }
+        }
+    }, [categories, activeCategoryId, hasHydrated]);
 
     const items = activeCategoryId ? getItemsByCategory(activeCategoryId) : [];
+
+    if (!hasHydrated) {
+        return <div className="min-h-screen bg-[#FDFCF8] flex items-center justify-center font-tajawal text-[#6B625E]">جاري التحميل...</div>;
+    }
 
     return (
         <section className="min-h-screen bg-[#FDFCF8] py-20 px-4 md:px-8">

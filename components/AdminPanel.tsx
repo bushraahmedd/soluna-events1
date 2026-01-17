@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore, Category, Item } from "@/lib/store";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,6 +13,11 @@ export function AdminPanel() {
         addCategory, updateCategory, deleteCategory,
         addItem, updateItem, deleteItem
     } = useStore();
+    const [hasHydrated, setHasHydrated] = useState(false);
+
+    useEffect(() => {
+        setHasHydrated(true);
+    }, []);
 
     const [activeTab, setActiveTab] = useState<"categories" | "items">("items");
 
@@ -110,6 +115,8 @@ export function AdminPanel() {
         setEditingItem(null);
         setItemForm({ name: "", price: 0, salePrice: undefined, categoryId: categories[0]?.id || "", images: [] });
     };
+
+    if (!hasHydrated) return null;
 
     return (
         <div className="w-full max-w-6xl mx-auto pt-24 pb-12 px-4 dir-rtl">
