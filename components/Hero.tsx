@@ -89,21 +89,9 @@ export function Hero() {
                     <h1 className="text-6xl md:text-8xl font-cinzel text-[#2C2420] drop-shadow-sm mb-4">
                         SOLUNA
                     </h1>
-                    <p className="text-xl md:text-3xl font-tajawal text-[#B89E5F] font-bold tracking-wide max-w-2xl mx-auto leading-relaxed mb-12">
+                    <p className="text-xl md:text-3xl font-tajawal text-[#B89E5F] font-bold tracking-wide max-w-2xl mx-auto leading-relaxed mb-8">
                         لأن الأحلام تستحق أن تروى ، ولحظات العمر تستحق أن تُغلف
                     </p>
-
-                    <div className="flex flex-col items-center gap-6">
-                        <Button
-                            asChild
-                            className="bg-[#2C2420] hover:bg-[#B89E5F] text-white font-tajawal font-bold px-10 py-7 text-xl rounded-full shadow-xl hover:shadow-[#B89E5F]/20 transition-all duration-300 group"
-                        >
-                            <a href="#catalog">
-                                اكتشف كتالوجنا
-                                <ChevronDown className="mr-2 w-6 h-6 animate-bounce" />
-                            </a>
-                        </Button>
-                    </div>
                 </motion.div>
             </motion.div>
         </div>
