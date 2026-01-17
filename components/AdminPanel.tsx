@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Plus, Pencil, Trash, X, Save, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
-import { uploadImage } from "@/lib/storage";
+import { uploadImage, deleteImage } from "@/lib/storage";
 
 export function AdminPanel() {
     const {
@@ -66,7 +66,11 @@ export function AdminPanel() {
         }
     };
 
-    const removeImage = (index: number) => {
+    const removeImage = async (index: number) => {
+        const urlToDelete = itemForm.images?.[index];
+        if (urlToDelete) {
+            await deleteImage(urlToDelete);
+        }
         setItemForm(prev => ({
             ...prev,
             images: prev.images?.filter((_, i) => i !== index)
@@ -106,6 +110,18 @@ export function AdminPanel() {
             images: item.images?.length ? item.images : (item.image ? [item.image] : [])
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDeleteItem = async (item: Item) => {
+        if (!confirm("هل أنت متأكد من حذف هذا العنصر؟")) return;
+
+        // Delete all images from storage
+        const imagesToDelete = item.images?.length ? item.images : (item.image ? [item.image] : []);
+        for (const url of imagesToDelete) {
+            await deleteImage(url);
+        }
+
+        await deleteItem(item.id);
     };
 
     const cancelEditItem = () => {
@@ -276,7 +292,7 @@ export function AdminPanel() {
                                         <Button variant="ghost" size="icon" onClick={() => startEditItem(item)} className="text-[#6B625E] hover:text-[#B89E5F] hover:bg-[#F9F8F4]">
                                             <Pencil className="h-5 w-5" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => deleteItem(item.id)}>
+                                        <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteItem(item)}>
                                             <Trash className="h-5 w-5" />
                                         </Button>
                                     </div>
