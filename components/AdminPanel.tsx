@@ -263,7 +263,7 @@ export function AdminPanel() {
                                         </span>
                                     </div>
 
-                                    <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex flex-col gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                         <Button variant="ghost" size="icon" onClick={() => startEditItem(item)} className="text-[#6B625E] hover:text-[#B89E5F] hover:bg-[#F9F8F4]">
                                             <Pencil className="h-5 w-5" />
                                         </Button>
