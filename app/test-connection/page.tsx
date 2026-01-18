@@ -20,16 +20,20 @@ export default function TestConnectionPage() {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-        if (!url || url === 'https://placeholder.supabase.co') {
-            addLog("❌ ERROR: Using placeholder URL! Environment variables not loaded.");
+        if (!url) {
+            addLog("❌ ERROR: NEXT_PUBLIC_SUPABASE_URL is Missing!");
+        } else if (url === 'https://placeholder.supabase.co') {
+            addLog("❌ ERROR: Using placeholder URL! Env var not loaded.");
         } else {
-            addLog(`✅ Supabase URL: ${url}`);
+            addLog(`✅ URL Found: ${url.substring(0, 15)}...`);
         }
 
-        if (!key || key === 'placeholder') {
-            addLog("❌ ERROR: Using placeholder key! Environment variables not loaded.");
+        if (!key) {
+            addLog("❌ ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY is Missing!");
+        } else if (key === 'placeholder') {
+            addLog("❌ ERROR: Using placeholder Key! Env var not loaded.");
         } else {
-            addLog(`✅ Supabase Key: ${key.substring(0, 20)}...`);
+            addLog(`✅ Key Found: ${key.substring(0, 10)}... (Length: ${key.length})`);
         }
 
         // Test 2: Try to read from categories
