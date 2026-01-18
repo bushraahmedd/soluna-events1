@@ -100,6 +100,35 @@ export default function TestConnectionPage() {
         await new Promise(resolve => setTimeout(resolve, 3000));
         channel.unsubscribe();
 
+        // Test 6: Storage Check
+        addLog("🔍 Testing Storage 'images' bucket...");
+        try {
+            const testBlob = new Blob(['test-file'], { type: 'text/plain' });
+            const fileName = `diagnostic-${Date.now()}.txt`;
+
+            // Upload
+            const { error: uploadError } = await supabase.storage
+                .from('images')
+                .upload(fileName, testBlob);
+
+            if (uploadError) {
+                addLog(`❌ STORAGE UPLOAD FAILED: ${uploadError.message}`);
+            } else {
+                addLog(`✅ STORAGE UPLOAD SUCCESS`);
+
+                // Get Public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('images')
+                    .getPublicUrl(fileName);
+                addLog(`✅ PUBLIC URL GEN: ${publicUrl ? 'OK' : 'FAIL'}`);
+
+                // Clean up
+                await supabase.storage.from('images').remove([fileName]);
+            }
+        } catch (e: any) {
+            addLog(`❌ STORAGE EXCEPTION: ${e.message}`);
+        }
+
         setIsTesting(false);
         addLog("✅ All tests completed!");
     };
