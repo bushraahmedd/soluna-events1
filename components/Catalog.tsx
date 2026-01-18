@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function Catalog() {
-    const { categories, items: storeItems, getItemsByCategory, isLoading, isConnected } = useStore();
+    const { categories, items: storeItems, getItemsByCategory, isLoading } = useStore();
     const [activeCategoryId, setActiveCategoryId] = useState("");
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
@@ -39,13 +39,7 @@ export function Catalog() {
             <div className="mx-auto max-w-7xl">
                 <div className="mb-12 text-center">
                     <h2 className="text-4xl font-tajawal font-bold text-[#2C2420] mb-3">تنسيقاتنا المميزة</h2>
-                    <div className="h-1 w-24 bg-[#B89E5F] mx-auto rounded-full mb-4" />
-                    <div className="flex items-center justify-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.4)]" : "bg-amber-500 animate-pulse"}`} />
-                        <span className="font-tajawal text-xs text-[#6B625E] opacity-70">
-                            {isConnected ? "مزامنة سحابية نشطة" : "جاري الاتصال بالسحابة..."}
-                        </span>
-                    </div>
+                    <div className="h-1 w-24 bg-[#B89E5F] mx-auto rounded-full" />
                 </div>
 
                 {/* Category Tabs */}
