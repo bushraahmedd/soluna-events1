@@ -9,40 +9,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function Catalog() {
-    const { categories, items: storeItems, getItemsByCategory } = useStore();
-    const [hasHydrated, setHasHydrated] = useState(false);
+    const { categories, items: storeItems, getItemsByCategory, isLoading } = useStore();
     const [activeCategoryId, setActiveCategoryId] = useState("");
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-    // Handle hydration and cross-tab sync
     useEffect(() => {
-        setHasHydrated(true);
         if (categories.length > 0 && !activeCategoryId) {
             setActiveCategoryId(categories[0].id);
         }
-
-        // Listen for changes from other tabs (Admin)
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'soluna-storage') {
-                useStore.persist.rehydrate();
-            }
-        };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
     }, [categories, activeCategoryId]);
 
     // If active category is deleted or list changes, ensure we have a valid selection
     useEffect(() => {
-        if (hasHydrated && categories.length > 0) {
+        if (categories.length > 0) {
             if (!activeCategoryId || !categories.find(c => c.id === activeCategoryId)) {
                 setActiveCategoryId(categories[0].id);
             }
         }
-    }, [categories, activeCategoryId, hasHydrated]);
+    }, [categories, activeCategoryId]);
 
     const items = activeCategoryId ? getItemsByCategory(activeCategoryId) : [];
 
-    if (!hasHydrated) {
+    if (isLoading && categories.length === 0) {
         return <div className="min-h-screen bg-[#FDFCF8] flex items-center justify-center font-tajawal text-[#6B625E]">جاري التحميل...</div>;
     }
 
