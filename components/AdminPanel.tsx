@@ -48,12 +48,13 @@ export function AdminPanel() {
                 const uploadPromises = Array.from(files).map(file => uploadImage(file));
                 const uploadedUrls = await Promise.all(uploadPromises);
 
-                const validUrls = uploadedUrls.filter((url): url is string => url !== null);
-
                 setItemForm(prev => ({
                     ...prev,
-                    images: [...(prev.images || []), ...validUrls]
+                    images: [...(prev.images || []), ...uploadedUrls]
                 }));
+            } catch (err: any) {
+                alert("Upload Failed: " + err.message);
+                console.error(err);
             } finally {
                 setIsUploading(false);
             }
