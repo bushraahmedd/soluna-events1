@@ -21,6 +21,7 @@ interface StoreState {
     categories: Category[];
     items: Item[];
     isLoading: boolean;
+    isConnected: boolean;
     initialize: () => Promise<void>;
     addCategory: (category: Category) => Promise<void>;
     updateCategory: (id: string, name: string) => Promise<void>;
@@ -36,6 +37,7 @@ export const useStore = create<StoreState>()((set, get) => ({
     categories: [],
     items: [],
     isLoading: false,
+    isConnected: false,
 
     initialize: async () => {
         set({ isLoading: true });
@@ -52,7 +54,8 @@ export const useStore = create<StoreState>()((set, get) => ({
             set({
                 categories: categoriesRes.data || [],
                 items: itemsRes.data || [],
-                isLoading: false
+                isLoading: false,
+                isConnected: true
             });
 
             // Set up real-time subscriptions

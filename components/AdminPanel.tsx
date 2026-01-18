@@ -10,7 +10,7 @@ import { uploadImage, deleteImage } from "@/lib/storage";
 
 export function AdminPanel() {
     const {
-        categories, items,
+        categories, items, isConnected,
         addCategory, updateCategory, deleteCategory,
         addItem, updateItem, deleteItem
     } = useStore();
@@ -126,19 +126,28 @@ export function AdminPanel() {
     return (
         <div className="w-full max-w-6xl mx-auto pt-24 pb-12 px-4 dir-rtl">
             {/* Tabs */}
-            <div className="flex justify-center gap-8 mb-12 border-b border-[#EBE9E1]">
-                <button
-                    onClick={() => setActiveTab("items")}
-                    className={`font-tajawal font-bold text-xl pb-4 px-4 transition-all ${activeTab === "items" ? "text-[#B89E5F] border-b-4 border-[#B89E5F]" : "text-[#6B625E] hover:text-[#2C2420]"}`}
-                >
-                    إدارة العناصر (Items)
-                </button>
-                <button
-                    onClick={() => setActiveTab("categories")}
-                    className={`font-tajawal font-bold text-xl pb-4 px-4 transition-all ${activeTab === "categories" ? "text-[#B89E5F] border-b-4 border-[#B89E5F]" : "text-[#6B625E] hover:text-[#2C2420]"}`}
-                >
-                    إدارة التصنيفات (Categories)
-                </button>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12 border-b border-[#EBE9E1]">
+                <div className="flex justify-center gap-8">
+                    <button
+                        onClick={() => setActiveTab("items")}
+                        className={`font-tajawal font-bold text-xl pb-4 px-4 transition-all ${activeTab === "items" ? "text-[#B89E5F] border-b-4 border-[#B89E5F]" : "text-[#6B625E] hover:text-[#2C2420]"}`}
+                    >
+                        إدارة العناصر (Items)
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("categories")}
+                        className={`font-tajawal font-bold text-xl pb-4 px-4 transition-all ${activeTab === "categories" ? "text-[#B89E5F] border-b-4 border-[#B89E5F]" : "text-[#6B625E] hover:text-[#2C2420]"}`}
+                    >
+                        إدارة التصنيفات (Categories)
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-2 pb-4 px-4 self-center">
+                    <div className={`w-3 h-3 rounded-full ${isConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-amber-500 animate-pulse"}`} />
+                    <span className="font-tajawal text-sm text-[#6B625E]">
+                        {isConnected ? "متصل بالسحابة (Supabase)" : "جاري الاتصال بالسحابة..."}
+                    </span>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8" dir="rtl">
