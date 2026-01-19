@@ -33,11 +33,17 @@ async function inspect() {
     console.log("Checking Tables:");
     const { data: categories, error: catError } = await supabase.from('categories').select('*');
     if (catError) console.log(`   ❌ Categories: Error - ${catError.message}`);
-    else console.log(`   ✅ Categories: Found ${categories.length} rows`);
+    else {
+        console.log(`   ✅ Categories: Found ${categories.length} rows`);
+        categories.forEach(c => console.log(`      - ID: ${c.id}, Name: ${c.name}`));
+    }
 
     const { data: items, error: itemError } = await supabase.from('items').select('*');
     if (itemError) console.log(`   ❌ Items: Error - ${itemError.message}`);
-    else console.log(`   ✅ Items: Found ${items.length} rows`);
+    else {
+        console.log(`   ✅ Items: Found ${items.length} rows`);
+        items.forEach(i => console.log(`      - ID: ${i.id}, Name: ${i.name}, CatID: ${i.categoryId}`));
+    }
 
     // 2. Check Storage
     console.log("\nChecking Storage:");

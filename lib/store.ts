@@ -51,7 +51,11 @@ export const useStore = create<StoreState>()((set, get) => ({
 
             set({
                 categories: categoriesRes.data || [],
-                items: itemsRes.data || [],
+                items: (itemsRes.data || []).map((i: any) => ({
+                    ...i,
+                    categoryId: i.category_id,
+                    salePrice: i.sale_price
+                })),
                 isLoading: false
             });
 
@@ -64,7 +68,13 @@ export const useStore = create<StoreState>()((set, get) => ({
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, async () => {
                     const { data } = await supabase.from('items').select('*');
-                    if (data) set({ items: data });
+                    if (data) set({
+                        items: data.map((i: any) => ({
+                            ...i,
+                            categoryId: i.category_id,
+                            salePrice: i.sale_price
+                        }))
+                    });
                 })
                 .subscribe();
 
@@ -108,7 +118,7 @@ export const useStore = create<StoreState>()((set, get) => ({
             items: state.items.filter((i) => i.categoryId !== id),
         }));
 
-        const { error: itemError } = await supabase.from('items').delete().eq('categoryId', id);
+        const { error: itemError } = await supabase.from('items').delete().eq('category_id', id);
         const { error: catError } = await supabase.from('categories').delete().eq('id', id);
 
         if (itemError || catError) {
@@ -127,11 +137,25 @@ export const useStore = create<StoreState>()((set, get) => ({
         // Optimistic update
         set((state) => ({ items: [...state.items, item] }));
 
-        const { error } = await supabase.from('items').insert([item]);
+        // Map for DB
+        const { categoryId, salePrice, ...rest } = item;
+        const dbItem = {
+            ...rest,
+            category_id: categoryId,
+            sale_price: salePrice
+        };
+
+        const { error } = await supabase.from('items').insert([dbItem]);
         if (error) {
             console.error('Error adding item:', error);
             const { data } = await supabase.from('items').select('*');
-            if (data) set({ items: data });
+            if (data) set({
+                items: data.map((i: any) => ({
+                    ...i,
+                    categoryId: i.category_id,
+                    salePrice: i.sale_price
+                }))
+            });
         }
     },
 
@@ -141,11 +165,25 @@ export const useStore = create<StoreState>()((set, get) => ({
             items: state.items.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
         }));
 
-        const { error } = await supabase.from('items').update(updatedItem).eq('id', updatedItem.id);
+        // Map for DB
+        const { categoryId, salePrice, ...rest } = updatedItem;
+        const dbItem = {
+            ...rest,
+            category_id: categoryId,
+            sale_price: salePrice
+        };
+
+        const { error } = await supabase.from('items').update(dbItem).eq('id', updatedItem.id);
         if (error) {
             console.error('Error updating item:', error);
             const { data } = await supabase.from('items').select('*');
-            if (data) set({ items: data });
+            if (data) set({
+                items: data.map((i: any) => ({
+                    ...i,
+                    categoryId: i.category_id,
+                    salePrice: i.sale_price
+                }))
+            });
         }
     },
 
@@ -157,7 +195,13 @@ export const useStore = create<StoreState>()((set, get) => ({
         if (error) {
             console.error('Error deleting item:', error);
             const { data } = await supabase.from('items').select('*');
-            if (data) set({ items: data });
+            if (data) set({
+                items: data.map((i: any) => ({
+                    ...i,
+                    categoryId: i.category_id,
+                    salePrice: i.sale_price
+                }))
+            });
         }
     },
 
