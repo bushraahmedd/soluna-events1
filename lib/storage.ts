@@ -51,24 +51,37 @@ async function compressImage(file: File): Promise<Blob | File> {
 }
 
 export async function uploadImage(file: File): Promise<string> {
-    const compressedFile = await compressImage(file);
-    const fileExt = 'jpg'; // Use jpg as we compress to jpeg
-    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `${fileName}`;
+    try {
+        const compressedBlob = await compressImage(file);
+        const fileExt = 'jpg';
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, compressedFile);
+        // Convert Blob to File for better compatibility with some upload clients
+        const finalFile = new File([compressedBlob], fileName, { type: 'image/jpeg' });
 
-    if (uploadError) {
-        throw new Error(uploadError.message);
+        const { error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(filePath, finalFile, {
+                contentType: 'image/jpeg',
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (uploadError) {
+            console.error('Supabase Upload Error:', uploadError);
+            throw new Error(uploadError.message);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('images')
+            .getPublicUrl(filePath);
+
+        return publicUrl;
+    } catch (error: any) {
+        console.error('Error in uploadImage:', error);
+        throw error;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-        .from('images')
-        .getPublicUrl(filePath);
-
-    return publicUrl;
 }
 
 export async function deleteImage(url: string) {
