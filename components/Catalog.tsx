@@ -171,17 +171,41 @@ function ItemDetailsModal({ item, onClose }: { item: Item; onClose: () => void }
                 </button>
 
                 {/* Left: Image Gallery */}
-                <div className="w-full md:w-1/2 bg-[#F9F8F4] relative aspect-square md:aspect-auto">
+                <div className="w-full md:w-1/2 bg-[#F9F8F4] relative aspect-square md:aspect-auto overflow-hidden">
                     {images.length > 0 ? (
                         <>
-                            <Image
-                                src={images[currentImageIdx]}
-                                alt={item.name}
-                                fill
-                                className="object-cover"
-                            />
+                            <AnimatePresence initial={false} mode="wait">
+                                <motion.div
+                                    key={currentImageIdx}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="absolute inset-0"
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    onDragEnd={(_, info) => {
+                                        const swipeThreshold = 50;
+                                        if (info.offset.x < -swipeThreshold) {
+                                            // Swiped left -> Next
+                                            setCurrentImageIdx((prev) => (prev + 1) % images.length);
+                                        } else if (info.offset.x > swipeThreshold) {
+                                            // Swiped right -> Prev
+                                            setCurrentImageIdx((prev) => (prev - 1 + images.length) % images.length);
+                                        }
+                                    }}
+                                >
+                                    <Image
+                                        src={images[currentImageIdx]}
+                                        alt={item.name}
+                                        fill
+                                        className="object-cover cursor-grab active:cursor-grabbing"
+                                        draggable={false}
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
                             {images.length > 1 && (
-                                <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2">
+                                <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 z-10">
                                     {images.map((_, idx) => (
                                         <button
                                             key={idx}
