@@ -23,13 +23,13 @@ export function Contact() {
                     <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
                         {/* Phone */}
                         <a
-                            href="tel:+218918405037"
+                            href="tel:+218920786047"
                             className="flex flex-col items-center gap-4 group p-6 rounded-2xl border border-white/5 hover:border-[#B89E5F]/50 hover:bg-white/5 transition-all duration-300 w-full md:w-64"
                         >
                             <div className="w-16 h-16 rounded-full bg-[#B89E5F]/10 flex items-center justify-center group-hover:bg-[#B89E5F] transition-colors duration-300">
                                 <Phone className="w-8 h-8 text-[#B89E5F] group-hover:text-[#2C2420]" />
                             </div>
-                            <span className="font-tajawal text-lg dir-ltr font-bold text-stone-200">+218 91-8405037</span>
+                            <span className="font-tajawal text-lg dir-ltr font-bold text-stone-200">+218 92 0786047</span>
                         </a>
 
                         {/* Facebook */}
@@ -47,7 +47,7 @@ export function Contact() {
 
                         {/* WhatsApp (Simulated with phone for now or standard WA link if preferred, usually same number) */}
                         <a
-                            href="https://wa.me/218918405037"
+                            href="https://wa.me/218920786047"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex flex-col items-center gap-4 group p-6 rounded-2xl border border-white/5 hover:border-[#B89E5F]/50 hover:bg-white/5 transition-all duration-300 w-full md:w-64"

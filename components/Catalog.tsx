@@ -234,7 +234,7 @@ function ItemDetailsModal({ item, onClose }: { item: Item; onClose: () => void }
 
                         <div className="mt-auto">
                             <a
-                                href={`https://wa.me/218918405037?text=أهلاً، أود الاستفسار عن: ${item.name}`}
+                                href={`https://wa.me/218920786047?text=أهلاً، أود الاستفسار عن: ${item.name}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="block w-full bg-[#2C2420] hover:bg-[#B89E5F] text-white text-center py-4 rounded-xl font-bold font-tajawal transition-colors"

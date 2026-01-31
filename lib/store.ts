@@ -49,13 +49,17 @@ export const useStore = create<StoreState>()((set, get) => ({
             if (categoriesRes.error) throw categoriesRes.error;
             if (itemsRes.error) throw itemsRes.error;
 
+            const mappedItems = (itemsRes.data || []).map((i: any) => ({
+                ...i,
+                // Flexible mapping to handle both snake_case (DB standard) and camelCase (potential legacy)
+                categoryId: i.category_id || i.categoryId || i.categoryid || '',
+                salePrice: i.sale_price !== undefined ? i.sale_price : i.salePrice,
+                images: i.images || (i.image ? [i.image] : [])
+            }));
+
             set({
                 categories: categoriesRes.data || [],
-                items: (itemsRes.data || []).map((i: any) => ({
-                    ...i,
-                    categoryId: i.category_id,
-                    salePrice: i.sale_price
-                })),
+                items: mappedItems,
                 isLoading: false
             });
 
@@ -68,18 +72,20 @@ export const useStore = create<StoreState>()((set, get) => ({
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, async () => {
                     const { data } = await supabase.from('items').select('*');
-                    if (data) set({
-                        items: data.map((i: any) => ({
+                    if (data) {
+                        const updatedItems = data.map((i: any) => ({
                             ...i,
-                            categoryId: i.category_id,
-                            salePrice: i.sale_price
-                        }))
-                    });
+                            categoryId: i.category_id || i.categoryId || i.categoryid || '',
+                            salePrice: i.sale_price !== undefined ? i.sale_price : i.salePrice,
+                            images: i.images || (i.image ? [i.image] : [])
+                        }));
+                        set({ items: updatedItems });
+                    }
                 })
                 .subscribe();
 
-        } catch (error) {
-            console.error('Error initializing Supabase store:', error);
+        } catch (error: any) {
+            console.error('Error initializing Supabase store:', error.message || error);
             set({ isLoading: false });
         }
     },
@@ -129,7 +135,15 @@ export const useStore = create<StoreState>()((set, get) => ({
                 supabase.from('items').select('*')
             ]);
             if (categoriesRes.data) set({ categories: categoriesRes.data });
-            if (itemsRes.data) set({ items: itemsRes.data });
+            if (itemsRes.data) {
+                const mapped = itemsRes.data.map((i: any) => ({
+                    ...i,
+                    categoryId: i.category_id || i.categoryId || i.categoryid || '',
+                    salePrice: i.sale_price !== undefined ? i.sale_price : i.salePrice,
+                    images: i.images || (i.image ? [i.image] : [])
+                }));
+                set({ items: mapped });
+            }
         }
     },
 
@@ -137,25 +151,31 @@ export const useStore = create<StoreState>()((set, get) => ({
         // Optimistic update
         set((state) => ({ items: [...state.items, item] }));
 
-        // Map for DB
-        const { categoryId, salePrice, ...rest } = item;
+        // Map for DB (snake_case)
         const dbItem = {
-            ...rest,
-            category_id: categoryId,
-            sale_price: salePrice
+            id: item.id,
+            name: item.name,
+            price: Number(item.price),
+            sale_price: item.salePrice ? Number(item.salePrice) : null,
+            category_id: item.categoryId,
+            images: item.images || [],
+            description: item.description || ''
         };
 
         const { error } = await supabase.from('items').insert([dbItem]);
         if (error) {
             console.error('Error adding item:', error);
+            // Revert on error - re-fetch to be safe
             const { data } = await supabase.from('items').select('*');
-            if (data) set({
-                items: data.map((i: any) => ({
+            if (data) {
+                const mapped = data.map((i: any) => ({
                     ...i,
-                    categoryId: i.category_id,
-                    salePrice: i.sale_price
-                }))
-            });
+                    categoryId: i.category_id || i.categoryId || i.categoryid || '',
+                    salePrice: i.sale_price !== undefined ? i.sale_price : i.salePrice,
+                    images: i.images || (i.image ? [i.image] : [])
+                }));
+                set({ items: mapped });
+            }
         }
     },
 
@@ -166,24 +186,28 @@ export const useStore = create<StoreState>()((set, get) => ({
         }));
 
         // Map for DB
-        const { categoryId, salePrice, ...rest } = updatedItem;
         const dbItem = {
-            ...rest,
-            category_id: categoryId,
-            sale_price: salePrice
+            name: updatedItem.name,
+            price: Number(updatedItem.price),
+            sale_price: updatedItem.salePrice ? Number(updatedItem.salePrice) : null,
+            category_id: updatedItem.categoryId,
+            images: updatedItem.images || [],
+            description: updatedItem.description || ''
         };
 
         const { error } = await supabase.from('items').update(dbItem).eq('id', updatedItem.id);
         if (error) {
             console.error('Error updating item:', error);
             const { data } = await supabase.from('items').select('*');
-            if (data) set({
-                items: data.map((i: any) => ({
+            if (data) {
+                const mapped = data.map((i: any) => ({
                     ...i,
-                    categoryId: i.category_id,
-                    salePrice: i.sale_price
-                }))
-            });
+                    categoryId: i.category_id || i.categoryId || i.categoryid || '',
+                    salePrice: i.sale_price !== undefined ? i.sale_price : i.salePrice,
+                    images: i.images || (i.image ? [i.image] : [])
+                }));
+                set({ items: mapped });
+            }
         }
     },
 
@@ -195,13 +219,15 @@ export const useStore = create<StoreState>()((set, get) => ({
         if (error) {
             console.error('Error deleting item:', error);
             const { data } = await supabase.from('items').select('*');
-            if (data) set({
-                items: data.map((i: any) => ({
+            if (data) {
+                const mapped = data.map((i: any) => ({
                     ...i,
-                    categoryId: i.category_id,
-                    salePrice: i.sale_price
-                }))
-            });
+                    categoryId: i.category_id || i.categoryId || i.categoryid || '',
+                    salePrice: i.sale_price !== undefined ? i.sale_price : i.salePrice,
+                    images: i.images || (i.image ? [i.image] : [])
+                }));
+                set({ items: mapped });
+            }
         }
     },
 

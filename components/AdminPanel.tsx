@@ -82,7 +82,8 @@ export function AdminPanel() {
             salePrice: itemForm.salePrice ? Number(itemForm.salePrice) : undefined,
             categoryId: itemForm.categoryId,
             images: itemForm.images || [],
-            image: itemForm.images?.[0] || "" // Fallback
+            image: itemForm.images?.[0] || "", // Fallback
+            description: itemForm.description || ""
         };
 
         if (editingItem) {
@@ -92,7 +93,7 @@ export function AdminPanel() {
             addItem({ id: crypto.randomUUID(), ...itemData } as Item);
         }
         // Reset form
-        setItemForm({ name: "", price: 0, salePrice: undefined, categoryId: categories[0]?.id || "", images: [] });
+        setItemForm({ name: "", price: 0, salePrice: undefined, categoryId: categories[0]?.id || "", images: [], description: "" });
     };
 
     const startEditItem = (item: Item) => {
@@ -102,7 +103,8 @@ export function AdminPanel() {
             price: item.price,
             salePrice: item.salePrice,
             categoryId: item.categoryId,
-            images: item.images?.length ? item.images : (item.image ? [item.image] : [])
+            images: item.images?.length ? item.images : (item.image ? [item.image] : []),
+            description: item.description || ""
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -121,7 +123,7 @@ export function AdminPanel() {
 
     const cancelEditItem = () => {
         setEditingItem(null);
-        setItemForm({ name: "", price: 0, salePrice: undefined, categoryId: categories[0]?.id || "", images: [] });
+        setItemForm({ name: "", price: 0, salePrice: undefined, categoryId: categories[0]?.id || "", images: [], description: "" });
     };
 
     return (
@@ -272,10 +274,16 @@ export function AdminPanel() {
 
                                     <div className="flex-1 text-right">
                                         <h3 className="font-bold text-[#2C2420] font-tajawal text-lg mb-1">{item.name}</h3>
-                                        <p className="text-[#B89E5F] font-tajawal font-medium">
-                                            {item.price} د.أ
-                                            {item.salePrice && <span className="text-red-400 line-through text-sm mr-2 opacity-70">{item.salePrice} د.أ</span>}
-                                        </p>
+                                        <div className="flex flex-row-reverse items-center justify-start gap-2">
+                                            {item.salePrice ? (
+                                                <>
+                                                    <span className="text-[#B89E5F] font-tajawal font-bold">{item.salePrice} د.أ</span>
+                                                    <span className="text-[#6B625E] line-through text-xs font-tajawal opacity-70">{item.price} د.أ</span>
+                                                </>
+                                            ) : (
+                                                <span className="text-[#B89E5F] font-tajawal font-medium">{item.price} د.أ</span>
+                                            )}
+                                        </div>
                                         <span className="text-xs text-[#6B625E] bg-[#F9F8F4] px-2 py-1 rounded-full mt-2 inline-block font-tajawal">
                                             {categories.find(c => c.id === item.categoryId)?.name || 'غير مصنف'}
                                         </span>
